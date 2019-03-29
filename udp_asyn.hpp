@@ -17,7 +17,7 @@ private:
     udp::endpoint remote_endpoint;
     std::function<void (const std::string &s, boost::asio::ip::address ip)> on_msg;
     udp::socket sock;
-    void handle_rec(const boost::system::error_code& error, std::size_t bytes_transf, boost::asio::ip::address ip);
+    void handle_rec(const boost::system::error_code& error, std::size_t bytes_transf);
 
 public:
     void broad_msg(const std::string &s, int port);

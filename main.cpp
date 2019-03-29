@@ -4,8 +4,7 @@
 
 void msg(const std::string &s, boost::asio::ip::address ip)
 {
-    std::cerr << "ip == " << ip << std::endl;
-    std::cerr << ">>> func res = " << s << " <<<" << std::endl;
+    std::cerr << "ip == " << ip << "  >>> func res = " << s << " <<<" << std::endl;
 }
 
 int main()

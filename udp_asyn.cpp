@@ -10,16 +10,16 @@ void Udp_asyn::receive_async()
 {
     using namespace std::placeholders;
     sock.async_receive_from(boost::asio::buffer(buff), remote_endpoint,
-        std::bind(&Udp_asyn::handle_rec, this, _1, _2, remote_endpoint.address()));
+        std::bind(&Udp_asyn::handle_rec, this, _1, _2));
 }
 
-void Udp_asyn::handle_rec(const boost::system::error_code& error, std::size_t bytes_transf, boost::asio::ip::address ip)
+void Udp_asyn::handle_rec(const boost::system::error_code& error, std::size_t bytes_transf)
 {
     if (error && error != boost::asio::error::message_size)
         throw boost::system::system_error(error);
     if (on_msg) {
         std::string s;
-        on_msg(s.append(buff.data(), bytes_transf), ip);
+        on_msg(s.append(buff.data(), bytes_transf), remote_endpoint.address());
     }
     receive_async();
 }
