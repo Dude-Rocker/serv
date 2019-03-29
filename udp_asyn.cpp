@@ -4,34 +4,27 @@
 Udp_asyn::Udp_asyn(boost::asio::io_service & service, udp::endpoint &ep) :
     serv(service), sock(serv, ep) { }
 
-Udp_asyn::~Udp_asyn() { serv.stop(); }
+Udp_asyn::~Udp_asyn() { }
 
-void Udp_asyn::asyn_start()
+void Udp_asyn::receive_async()
 {
     using namespace std::placeholders;
-    sock.async_receive_from(boost::asio::buffer(buff), remote_endpoint, std::bind(&Udp_asyn::asyn_repl, this, _1, _2));
-    // sock.async_receive_from(boost::asio::buffer(buff), remote_endpoint,
-    // [&](const boost::system::error_code& error, std::size_t bytes_transf)
-    // { asyn_repl(error, bytes_transf); });
-    serv.run();
+    sock.async_receive_from(boost::asio::buffer(buff), remote_endpoint,
+        std::bind(&Udp_asyn::handle_rec, this, _1, _2, remote_endpoint.address()));
 }
 
-void Udp_asyn::asyn_repl(const boost::system::error_code& error, std::size_t bytes_transf)
+void Udp_asyn::handle_rec(const boost::system::error_code& error, std::size_t bytes_transf, boost::asio::ip::address ip)
 {
     if (error && error != boost::asio::error::message_size)
         throw boost::system::system_error(error);
     if (on_msg) {
         std::string s;
-        s.append(buff.data(), bytes_transf);
-        on_msg(s);
-    } else {
-        buff[bytes_transf] = '\n';
-        std::cerr.write(buff.data(), bytes_transf + 1);
+        on_msg(s.append(buff.data(), bytes_transf), ip);
     }
-    asyn_start();
+    receive_async();
 }
 
-void    Udp_asyn::broad_msg(std::string &s)
+void    Udp_asyn::broad_msg(const std::string &s, int port)
 {
     boost::system::error_code error;
     udp::socket socket(serv);
@@ -42,14 +35,24 @@ void    Udp_asyn::broad_msg(std::string &s)
         socket.set_option(udp::socket::reuse_address(true));
         socket.set_option(boost::asio::socket_base::broadcast(true));
 
-        udp::endpoint senderEndpoint(boost::asio::ip::address_v4::broadcast(), 15);            
+        udp::endpoint senderEndpoint(boost::asio::ip::address_v4::broadcast(), port);            
 
         socket.send_to(boost::asio::buffer(s), senderEndpoint);
         socket.close(error);
     }
 }
 
-void    Udp_asyn::set_func(std::function< void (const std::string &s) > fun)
+void    Udp_asyn::multi_msg(const std::set<udp::endpoint> & points, const std::string &s)
+{
+    boost::system::error_code ign_error;
+
+    for(auto pts : points)
+    {
+        sock.send_to(boost::asio::buffer(s), pts, 0, ign_error);
+    }
+}
+
+void    Udp_asyn::set_func(std::function< void (const std::string &s, boost::asio::ip::address ip) > fun)
 {
     on_msg = fun;
 }

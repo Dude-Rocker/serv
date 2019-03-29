@@ -10,15 +10,16 @@ int main()
     
     udp::endpoint receiver_endpoint(udp::endpoint(udp::v4(), 15));
 
-    udp::socket socket(serv);
-    socket.open(udp::v4());
+    udp::socket socket(serv, udp::endpoint(udp::v4(), 2001));
+    // socket.open(udp::v4());
 
-    // boost::array<char, 1024> buff;
-    // boost::system::error_code err;
-    // std::cerr << "try\n";
-    // size_t t = socket.receive_from(boost::asio::buffer(buff), receiver_endpoint, 0, err);
-    // std::cerr << "catch\n";
-    // std::cout.write(buff.data(), t);
+    boost::array<char, 1024> buff;
+    boost::system::error_code err;
+    std::cerr << "try\n";
+    size_t t = socket.receive_from(boost::asio::buffer(buff), receiver_endpoint, 0, err);
+    std::cerr << "catch\n";
+    std::cerr.write(buff.data(), t);
+    std::cerr << std::endl;
     for(size_t i = 0; i < 60; i++)
     {
         std::string s = "hi my friend " + std::to_string(i);

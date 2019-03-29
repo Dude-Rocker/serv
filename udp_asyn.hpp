@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
+#include <set>
 
 using boost::asio::ip::udp;
 #define SIZE_DATA 1024
@@ -14,14 +15,15 @@ private:
     boost::asio::io_service & serv;
     boost::array<char, SIZE_DATA> buff;
     udp::endpoint remote_endpoint;
-    std::function<void (const std::string &s)> on_msg;
+    std::function<void (const std::string &s, boost::asio::ip::address ip)> on_msg;
     udp::socket sock;
-    void asyn_repl(const boost::system::error_code& error, std::size_t bytes_transf);
+    void handle_rec(const boost::system::error_code& error, std::size_t bytes_transf, boost::asio::ip::address ip);
 
 public:
-    void broad_msg(std::string &s);
-    void asyn_start();
-    void set_func(std::function< void (const std::string &s) > fun);
+    void broad_msg(const std::string &s, int port);
+    void multi_msg(const std::set<udp::endpoint> & set_points, const std::string &s);
+    void receive_async();
+    void set_func(std::function< void (const std::string &s, boost::asio::ip::address ip) > fun);
     Udp_asyn(boost::asio::io_service & service, udp::endpoint &ep);
     ~Udp_asyn();
 };

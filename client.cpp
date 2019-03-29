@@ -8,8 +8,8 @@ int main()
     
     udp::endpoint receiver_endpoint(udp::endpoint(udp::v4(), 15));
 
-    udp::socket socket(serv);
-    socket.open(udp::v4());
+    udp::socket socket(serv, udp::endpoint(udp::v4(), 2003));
+    // socket.open(udp::v4());
 
     for(size_t i = 0; i < 30; i++)
     {
