@@ -4,7 +4,8 @@
 
 void msg(const std::string &s, boost::asio::ip::address ip)
 {
-    std::cerr << "ip == " << ip << " >>> func res = " << s << " <<<" << std::endl;
+    std::string res = "ip = " + ip.to_string() + " msg = " + s + "\n";
+    std::cerr << res;
 }
 
 int main()
@@ -17,28 +18,36 @@ int main()
     s.set_on_msg(msg);
 
     std::thread t([&](){
-        s.receive_async();
+        s.start_receive();
         serv.run();
     });
 
-    std::string br = "this is broadcast";
-    while (1)
-    {
-        s.broad_msg(br, 15);
-        sleep(5);
-    }
+    std::thread t2([&](){
+        while (1)
+        {
+            s.broad_msg("this is broadcast", 15);
+            sleep(5);
+        }
+    });
     
-    #if 0 //test multi
-    std::set<udp::endpoint> sp;
-    sp.insert(udp::endpoint(udp::v4(), 2003));
-    sp.insert(udp::endpoint(udp::v4(), 2001));
-    sp.insert(udp::endpoint(udp::v4(), 15));
-    sp.insert(udp::endpoint(boost::asio::ip::address::from_string("192.168.0.116"), 15));
-    sp.insert(udp::endpoint(boost::asio::ip::address::from_string("192.168.0.184"), 15));
-    sp.insert(udp::endpoint(boost::asio::ip::address::from_string("192.168.0.184"), 2001));
-    s.multi_msg(sp, "multi testing");
+    udp::endpoint mult(boost::asio::ip::address::from_string("239.255.0.1"), 1200);
+
+    std::thread t4([&](){
+        s.mult_receive(boost::asio::ip::address::from_string("0.0.0.0"), boost::asio::ip::address::from_string("239.255.0.1"), 1200);
+        serv.run();
+    });
+
+    std::thread t3([&](){
+        for(size_t i = 0; i < 100; i++)
+        {
+            s.multi_msg("this is multicast", mult);
+            sleep(5);
+        }
+    });
+    t3.join();
     t.join();
-    #endif
+    t2.join();
+    t4.join();
 
     return 0;
 }
