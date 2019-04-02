@@ -7,7 +7,7 @@ set(NAME_SRV "server")
 
 set(SRCS_SRV main.cpp udp_asyn.cpp)
 
-find_package(Boost 1.69.0 COMPONENTS system regex filesystem REQUIRED)
+find_package(Boost 1.65.0 COMPONENTS system regex filesystem REQUIRED)
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -I/home/gabi/Downloads/asio-1.11.0/include -pthread")
