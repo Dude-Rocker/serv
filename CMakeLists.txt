@@ -5,7 +5,7 @@ project(test_rpoject)
 
 set(NAME_SRV "server")
 
-set(SRCS_SRV main.cpp udp_asyn.cpp)
+set(SRCS_SRV main.cpp udp_com.cpp)
 
 find_package(Boost 1.65.0 COMPONENTS system regex filesystem REQUIRED)
 
