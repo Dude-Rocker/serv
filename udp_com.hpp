@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <set>
+#include <array>
 
 using boost::asio::ip::udp;
 #define SIZE_DATA 1024
@@ -30,7 +31,7 @@ private:
 	boost::asio::ip::address m_multicast_address;
     udp::socket m_sock_listen;
     udp::socket m_sock_send;
-	std::string m_buff;
+	std::array<char, SIZE_DATA> m_buff;
     udp::endpoint m_remote_endpoint;
     std::function<void (const std::string &s, boost::asio::ip::address ip)> m_on_msg;
     void handle_send(const boost::system::error_code& error, std::size_t bytes_transf) const;

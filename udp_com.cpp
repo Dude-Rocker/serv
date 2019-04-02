@@ -12,8 +12,6 @@ udp_com::udp_com(boost::asio::io_service & service, ushort id, ushort port) : m_
 
     m_sock_listen.set_option(boost::asio::ip::multicast::join_group(m_multicast_address));
 
-    m_buff.resize(SIZE_DATA);
-
 }
 
 udp_com::~udp_com() { }
