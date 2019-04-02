@@ -23,7 +23,7 @@ boost::asio::ip::address Udp_asyn::id_to_address(ushort id)
 void Udp_asyn::start_receive()
 {
     using namespace std::placeholders;
-    _sock.async_receive_from(boost::asio::buffer(_buff_mult), _remote_endpoint_mult,
+    _sock.async_receive_from(boost::asio::buffer(_buff), _remote_endpoint,
         std::bind(&Udp_asyn::handle_rec, this, _1, _2));
 }
 
@@ -33,7 +33,7 @@ void Udp_asyn::handle_rec(const boost::system::error_code& error, std::size_t by
         throw boost::system::system_error(error);
     if (on_msg) {
         std::string s;
-        on_msg(s.append(_buff_mult.data(), bytes_transf), _remote_endpoint_mult.address());
+        on_msg(s.append(_buff.data(), bytes_transf), _remote_endpoint.address());
     }
     start_receive();
 }

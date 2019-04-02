@@ -15,11 +15,9 @@ private:
     boost::asio::io_service & _serv;
     ushort _id;
     ushort _port;
-    boost::array<char, SIZE_DATA> _buff;
-    boost::array<char, SIZE_DATA> _buff_mult;
-    udp::endpoint _remote_endpoint;
-    udp::endpoint _remote_endpoint_mult;
     udp::socket _sock;
+    boost::array<char, SIZE_DATA> _buff;
+    udp::endpoint _remote_endpoint;
     std::function<void (const std::string &s, boost::asio::ip::address ip)> on_msg;
     void handle_send(const boost::system::error_code& error, std::size_t bytes_transf) const;
     void handle_rec(const boost::system::error_code& error, std::size_t bytes_transf);

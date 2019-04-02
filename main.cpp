@@ -16,7 +16,7 @@ int main(int ac, char **av)
         return 0;
     }
     ushort port = std::atoi(av[1]);
-    uint id = std::atoi(av[2]);
+    ushort id = std::atoi(av[2]);
     
     boost::asio::io_service serv;
 
