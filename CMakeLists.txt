@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1)
 project(test_rpoject)
 
 
-set(NAME_SRV "server")
+set(NAME_SRV "udp_com")
 
 set(SRCS_SRV main.cpp udp_com.cpp)
 

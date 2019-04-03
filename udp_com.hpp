@@ -13,26 +13,22 @@ class udp_com
 {
 
 public:
-    udp_com(boost::asio::io_service & service, ushort id, ushort port);
+    udp_com(boost::asio::io_service & service, std::set<ushort> & group, ushort port);
     ~udp_com();
 
-    void send_msg_to_ids(const std::string &s, std::set<ushort> ids);
+    void send_msg_to_group(const std::string &s, ushort group);
     void start_receive();
     void set_on_msg(std::function< void (const std::string &s, boost::asio::ip::address ip) > fun);
 
-	ushort get_id();
 	ushort get_port();
-	boost::asio::ip::address get_multicast_address();
 
 private:
     boost::asio::io_service & m_io_service;
-    ushort m_id;
     ushort m_port;
 	boost::asio::ip::address m_multicast_address;
-    udp::socket m_sock_listen;
-    udp::socket m_sock_send;
-	std::array<char, SIZE_DATA> m_buff;
+    udp::socket m_socket;
     udp::endpoint m_remote_endpoint;
+	std::array<char, SIZE_DATA> m_buff;
     std::function<void (const std::string &s, boost::asio::ip::address ip)> m_on_msg;
     void handle_send(const boost::system::error_code& error, std::size_t bytes_transf) const;
     void handle_receive(const boost::system::error_code& error, std::size_t bytes_transf);

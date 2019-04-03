@@ -10,23 +10,28 @@ void msg(const std::string &s, boost::asio::ip::address ip)
 
 int main(int ac, char **av)
 {
-    if (ac != 3)
+    if (ac < 3)
     {
-        std::cerr << "usage ./<programm> <port> <id>\n";
+        std::cerr << "usage ./<programm> <port> <...group>\n";
         return 0;
     }
     ushort port = std::atoi(av[1]);
-    ushort id = std::atoi(av[2]);
     
-    boost::asio::io_service serv;
+    boost::asio::io_service io_service;
 
-    udp_com s(serv, id, port);
+    std::set<ushort> group;
+    for(size_t i = 2; i < ac; ++i)
+    {
+        group.insert(std::atoi(av[i]));
+    }
+    
+    udp_com s(io_service, group, port);
 
     s.set_on_msg(msg);
 
-    std::thread t3([&](){
+    std::thread thr([&](){
         s.start_receive();
-        serv.run();
+        io_service.run();
     });
 
     std::string cmd;
@@ -36,16 +41,14 @@ int main(int ac, char **av)
         if (cmd == "exit" || !(std::cin >> msg)) {
             break ;
         } else if (cmd == "multicast" || cmd == "m:") {
-            std::set<ushort> ids;
-            while ((std::cin >> ad) && ad)
-                ids.insert(ad);
-            s.send_msg_to_ids(msg, ids);
+            std::cin >> ad;
+            s.send_msg_to_group(msg, ad);
         } else {
-            std::cerr << "usage <m:|multicast> <message> <...id> <0> \nor <exit> to exit\n";
+            std::cerr << "usage :\n <m:|multicast> <message> <group>\n   <exit> to exit\n";
         }
     }
 
-    t3.join();
+    thr.join();
 
     return 0;
 }
