@@ -11,7 +11,7 @@ udp_com::udp_com(boost::asio::io_service & service, std::set<ushort> & group, us
 
     for(ushort add : group)
     {
-        m_socket.set_option(boost::asio::ip::multicast::join_group(id_to_address(add)));
+        add_group(add);
     }
 }
 
@@ -57,6 +57,16 @@ void udp_com::handle_send(const boost::system::error_code& error, std::size_t by
 void    udp_com::set_on_msg(std::function< void (const std::string &s, boost::asio::ip::address ip) > fun)
 {
     m_on_msg = fun;
+}
+
+void udp_com::add_group(ushort add)
+{
+    m_socket.set_option(boost::asio::ip::multicast::join_group(id_to_address(add)));
+}
+
+void udp_com::del_group(ushort add)
+{
+    m_socket.set_option(boost::asio::ip::multicast::leave_group(id_to_address(add)));
 }
 
 ushort udp_com::get_port()

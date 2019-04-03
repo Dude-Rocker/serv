@@ -15,6 +15,7 @@ int main(int ac, char **av)
         std::cerr << "usage ./<programm> <port> <...group>\n";
         return 0;
     }
+
     ushort port = std::atoi(av[1]);
     
     boost::asio::io_service io_service;
@@ -38,16 +39,23 @@ int main(int ac, char **av)
     std::string msg;
     ushort ad;
     while(std::cin >> cmd) {
-        if (cmd == "exit" || !(std::cin >> msg)) {
+        if (cmd == "exit") {
             break ;
         } else if (cmd == "multicast" || cmd == "m:") {
+            std::cin >> msg;
             std::cin >> ad;
             s.send_msg_to_group(msg, ad);
+        } else if (cmd == "add") {
+            std::cin >> ad;            
+            s.add_group(ad);
+        } else if (cmd == "del") {
+            std::cin >> ad;
+            s.del_group(ad);
         } else {
-            std::cerr << "usage :\n <m:|multicast> <message> <group>\n   <exit> to exit\n";
+            std::cerr << "usage :\n\t<m:|multicast> <'message'> <'group'>\n\t<add|del> <'group'>\n\t<exit> to exit\n";
         }
     }
-
+    
     thr.join();
 
     return 0;

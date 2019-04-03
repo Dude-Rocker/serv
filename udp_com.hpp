@@ -19,6 +19,8 @@ public:
     void send_msg_to_group(const std::string &s, ushort group);
     void start_receive();
     void set_on_msg(std::function< void (const std::string &s, boost::asio::ip::address ip) > fun);
+    void add_group(ushort add);
+    void del_group(ushort add);
 
 	ushort get_port();
 
