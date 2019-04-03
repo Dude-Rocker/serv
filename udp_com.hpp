@@ -23,12 +23,14 @@ public:
     void del_group(ushort add);
 
 	ushort get_port();
+	std::set<ushort> get_addrs();
 
 private:
     boost::asio::io_service & m_io_service;
     ushort m_port;
 	boost::asio::ip::address m_multicast_address;
     udp::socket m_socket;
+	std::set<ushort> m_addr;
     udp::endpoint m_remote_endpoint;
 	std::array<char, SIZE_DATA> m_buff;
     std::function<void (const std::string &s, boost::asio::ip::address ip)> m_on_msg;

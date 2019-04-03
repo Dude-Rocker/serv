@@ -26,36 +26,51 @@ int main(int ac, char **av)
         group.insert(std::atoi(av[i]));
     }
     
-    udp_com s(io_service, group, port);
+    udp_com commun(io_service, group, port);
 
-    s.set_on_msg(msg);
+    commun.set_on_msg(msg);
+    commun.start_receive();
 
     std::thread thr([&](){
-        s.start_receive();
         io_service.run();
     });
 
     std::string cmd;
     std::string msg;
     ushort ad;
+
     while(std::cin >> cmd) {
         if (cmd == "exit") {
             break ;
         } else if (cmd == "multicast" || cmd == "m:") {
             std::cin >> msg;
             std::cin >> ad;
-            s.send_msg_to_group(msg, ad);
+            commun.send_msg_to_group(msg, ad);
         } else if (cmd == "add") {
             std::cin >> ad;            
-            s.add_group(ad);
+            commun.add_group(ad);
         } else if (cmd == "del") {
             std::cin >> ad;
-            s.del_group(ad);
+            commun.del_group(ad);
+        } else if (cmd == "port") {
+            msg = "this port is " + std::to_string(commun.get_port());
+            std::cerr << msg << std::endl;
+        } else if (cmd == "address") {
+            std::set<ushort> ads = commun.get_addrs();
+            msg = "group contain:";
+            for(ushort ad : ads)
+            {
+                msg += " " + std::to_string(ad);
+            }
+            msg += " adresses";
+            std::cerr << msg << std::endl;
         } else {
-            std::cerr << "usage :\n\t<m:|multicast> <'message'> <'group'>\n\t<add|del> <'group'>\n\t<exit> to exit\n";
+            std::cerr << "usage :\n\t<m:|multicast> <'message'> <'group'>\n\
+\t<add|del> <'group'>\n\t<address|port>\n\t<exit> to exit\n";
         }
     }
     
+    io_service.stop();
     thr.join();
 
     return 0;

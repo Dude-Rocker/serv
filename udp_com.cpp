@@ -2,16 +2,16 @@
 #include <functional>
 
 udp_com::udp_com(boost::asio::io_service & service, std::set<ushort> & group, ushort port) : m_io_service(service),
-    m_port(port), m_socket(m_io_service)
+    m_port(port), m_socket(m_io_service), m_addr(group)
 {
     udp::endpoint listen_endpoint(boost::asio::ip::address::from_string("0.0.0.0"), m_port);
     m_socket.open(listen_endpoint.protocol());
     m_socket.set_option(boost::asio::ip::udp::socket::reuse_address(true));
     m_socket.bind(listen_endpoint);
 
-    for(ushort add : group)
+    for(ushort add : m_addr)
     {
-        add_group(add);
+        m_socket.set_option(boost::asio::ip::multicast::join_group(id_to_address(add)));
     }
 }
 
@@ -61,15 +61,26 @@ void    udp_com::set_on_msg(std::function< void (const std::string &s, boost::as
 
 void udp_com::add_group(ushort add)
 {
-    m_socket.set_option(boost::asio::ip::multicast::join_group(id_to_address(add)));
+    if (m_addr.find(add) == m_addr.end()) {
+        m_socket.set_option(boost::asio::ip::multicast::join_group(id_to_address(add)));
+        m_addr.insert(add);
+    }
 }
 
 void udp_com::del_group(ushort add)
 {
-    m_socket.set_option(boost::asio::ip::multicast::leave_group(id_to_address(add)));
+    if (m_addr.find(add) != m_addr.end()) {
+        m_socket.set_option(boost::asio::ip::multicast::leave_group(id_to_address(add)));
+        m_addr.erase(add);
+    }
 }
 
 ushort udp_com::get_port()
 {
     return m_port;
+}
+
+std::set<ushort> udp_com::get_addrs()
+{
+    return m_addr;
 }
