@@ -7,12 +7,13 @@
 #include <array>
 
 using boost::asio::ip::udp;
-#define SIZE_DATA 1024
+#define SIZE_DATA 65507
 
 class udp_com
 {
 
 public:
+
     udp_com(boost::asio::io_service & service, std::set<ushort> & group, ushort port);
     ~udp_com();
 
@@ -26,6 +27,7 @@ public:
 	std::set<ushort> get_addrs();
 
 private:
+
     boost::asio::io_service & m_io_service;
     ushort m_port;
 	boost::asio::ip::address m_multicast_address;

@@ -32,6 +32,10 @@ void udp_com::start_receive()
 
 void udp_com::handle_receive(const boost::system::error_code& error, std::size_t bytes_transf)
 {
+    #if 0 //for test
+        std::cerr << "inside handler size = " << bytes_transf << std::endl;
+    #endif
+
     if (error && error != boost::asio::error::message_size)
         throw boost::system::system_error(error);
     if (m_on_msg) {
@@ -44,8 +48,13 @@ void udp_com::handle_receive(const boost::system::error_code& error, std::size_t
 void    udp_com::send_msg_to_group(const std::string &s, ushort group)
 {
     using namespace std::placeholders;
-    m_socket.async_send_to(boost::asio::buffer(s), udp::endpoint(id_to_address(group), m_port),
-        std::bind(&udp_com::handle_send, this, _1, _2));
+    size_t size = s.size();
+    for (size_t i = 0; i < size; i += SIZE_DATA) {
+        int transf = (SIZE_DATA < size - i ? SIZE_DATA : size - i);
+        m_socket.async_send_to(boost::asio::buffer(s.data() + i, transf), udp::endpoint(id_to_address(group),
+            m_port), std::bind(&udp_com::handle_send, this, _1, _2));
+        
+    }
 }
 
 void udp_com::handle_send(const boost::system::error_code& error, std::size_t bytes_transf) const

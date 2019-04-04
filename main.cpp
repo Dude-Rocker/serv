@@ -1,6 +1,6 @@
 #include "udp_com.hpp"
 #include <thread>
-
+#include <fstream>
 
 void msg(const std::string &s, boost::asio::ip::address ip)
 {
@@ -36,10 +36,10 @@ int main(int ac, char **av)
     });
 
     std::string cmd;
-    std::string msg;
     ushort ad;
 
     while(std::cin >> cmd) {
+        std::string msg;
         if (cmd == "exit") {
             break ;
         } else if (cmd == "multicast" || cmd == "m:") {
@@ -55,6 +55,18 @@ int main(int ac, char **av)
         } else if (cmd == "port") {
             msg = "this port is " + std::to_string(commun.get_port());
             std::cerr << msg << std::endl;
+        } else if (cmd == "r:" || cmd == "read") {
+            std::cin >> msg;
+            std::ifstream is(msg);
+            if (is.is_open()) {
+                msg = "";
+                std::getline ( is, msg, '\0' );
+                std::cerr << msg.size() << " ";
+                std::cin >> ad;
+                commun.send_msg_to_group(msg, ad);
+            } else {
+                std::cerr << "cant read " << msg << std::endl;
+            }
         } else if (cmd == "address") {
             std::set<ushort> ads = commun.get_addrs();
             msg = "group contain:";
@@ -66,7 +78,7 @@ int main(int ac, char **av)
             std::cerr << msg << std::endl;
         } else {
             std::cerr << "usage :\n\t<m:|multicast> <'message'> <'group'>\n\
-\t<add|del> <'group'>\n\t<address|port>\n\t<exit> to exit\n";
+\t<add|del> <'group'>\n\t<r:|read> <file> <'group'>\n\t<address|port>\n\t<exit> to exit\n";
         }
     }
     
