@@ -5,9 +5,12 @@
 #include <boost/asio.hpp>
 #include <set>
 #include <array>
+#include <map>
 
 using boost::asio::ip::udp;
-#define SIZE_DATA 65507
+#define SIZE_DATA 16
+#define TIME_SEC 5
+#define PREAM 55001
 
 class udp_com
 {
@@ -28,6 +31,21 @@ public:
 
 private:
 
+    struct frame
+    {
+        uint16_t frame_id;
+        uint16_t packeg_id;
+        uint16_t full_pack;
+        uint16_t preamble;
+    };
+
+    struct rec_frame
+    {
+        uint16_t packeg_id;
+        uint16_t full_pack;;
+        std::string msg;
+    };
+
     boost::asio::io_service & m_io_service;
     ushort m_port;
 	boost::asio::ip::address m_multicast_address;
@@ -39,6 +57,8 @@ private:
     void handle_send(const boost::system::error_code& error, std::size_t bytes_transf) const;
     void handle_receive(const boost::system::error_code& error, std::size_t bytes_transf);
     boost::asio::ip::address id_to_address(ushort id);
+    uint8_t m_frame_id = 0;
+    std::map<std::string, std::vector<rec_frame>> m_map;
 
 };
 

@@ -1,5 +1,6 @@
 #include "udp_com.hpp"
 #include <functional>
+#include <utility>
 
 udp_com::udp_com(boost::asio::io_service & service, std::set<ushort> & group, ushort port) : m_io_service(service),
     m_port(port), m_socket(m_io_service), m_addr(group)
@@ -32,15 +33,37 @@ void udp_com::start_receive()
 
 void udp_com::handle_receive(const boost::system::error_code& error, std::size_t bytes_transf)
 {
-    #if 0 //for test
-        std::cerr << "inside handler size = " << bytes_transf << std::endl;
-    #endif
-
     if (error && error != boost::asio::error::message_size)
         throw boost::system::system_error(error);
-    if (m_on_msg) {
-        std::string s;
-        m_on_msg(s.append(m_buff.data(), bytes_transf), m_remote_endpoint.address());
+    int size_fr = sizeof(frame);
+    frame fr;
+    std::memcpy(&fr, m_buff.data(), size_fr);
+    if (fr.preamble == PREAM) {
+        std::string key = m_remote_endpoint.address().to_string() + ":" + std::to_string(fr.frame_id);
+
+        if (std::find_if(m_map[key].begin(), m_map[key].end(), [&fr](rec_frame &rec_fr) {
+            return fr.packeg_id == rec_fr.packeg_id;
+            }) == m_map[key].end())
+        {
+            rec_frame r_fr;
+            r_fr.packeg_id = fr.packeg_id;
+            r_fr.full_pack = fr.full_pack;
+            r_fr.msg.append(m_buff.data() + size_fr, bytes_transf - size_fr);
+            m_map[key].push_back(r_fr);
+        }
+
+        if (m_map[key].size() == m_map[key][0].full_pack) {
+            std::string res;
+            for(size_t i = 0; i < m_map[key].size(); ++i)
+            {
+                res += std::find_if(m_map[key].begin(), m_map[key].end(), [&i](rec_frame &rec_fr) {
+                    return i == rec_fr.packeg_id; })->msg;
+            }
+            
+            if (m_on_msg) {
+                m_on_msg(res, m_remote_endpoint.address());
+            }
+        }
     }
     start_receive();
 }
@@ -49,11 +72,21 @@ void    udp_com::send_msg_to_group(const std::string &s, ushort group)
 {
     using namespace std::placeholders;
     size_t size = s.size();
-    for (size_t i = 0; i < size; i += SIZE_DATA) {
-        int transf = (SIZE_DATA < size - i ? SIZE_DATA : size - i);
-        m_socket.async_send_to(boost::asio::buffer(s.data() + i, transf), udp::endpoint(id_to_address(group),
+    frame fr;
+    uint8_t size_struct = sizeof(fr);
+    uint16_t size_piece = SIZE_DATA - size_struct;
+    fr.preamble = PREAM;
+    fr.frame_id = m_frame_id++;
+    fr.full_pack = size / size_piece + (size % size_piece ? 1 : 0);
+
+    for (uint16_t i = 0; i < size; i += size_piece) {
+        fr.packeg_id = i / size_piece;
+        std::string buf;
+        buf.append(reinterpret_cast<char *>(&fr), size_struct);
+        int transf = (size_piece < size - i ? SIZE_DATA : size - i + size_struct);
+        buf.append(s.data() + i, transf);
+        m_socket.async_send_to(boost::asio::buffer(buf.data(), transf), udp::endpoint(id_to_address(group),
             m_port), std::bind(&udp_com::handle_send, this, _1, _2));
-        
     }
 }
 
