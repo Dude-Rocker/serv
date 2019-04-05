@@ -8,7 +8,7 @@
 #include <map>
 
 using boost::asio::ip::udp;
-#define SIZE_DATA 16
+#define SIZE_DATA 1024
 #define TIME_SEC 5
 #define PREAM 55001
 

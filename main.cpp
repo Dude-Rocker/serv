@@ -58,11 +58,10 @@ int main(int ac, char **av)
         } else if (cmd == "r:" || cmd == "read") {
             std::cin >> msg;
             std::ifstream is(msg);
+            std::cin >> ad;
             if (is.is_open()) {
                 msg = "";
-                std::getline ( is, msg, '\0' );
-                std::cerr << msg.size() << " ";
-                std::cin >> ad;
+                std::getline(is, msg, '\0');
                 commun.send_msg_to_group(msg, ad);
             } else {
                 std::cerr << "cant read " << msg << std::endl;

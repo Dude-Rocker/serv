@@ -63,6 +63,8 @@ void udp_com::handle_receive(const boost::system::error_code& error, std::size_t
             if (m_on_msg) {
                 m_on_msg(res, m_remote_endpoint.address());
             }
+
+            m_map.erase(key);
         }
     }
     start_receive();
