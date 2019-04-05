@@ -8,7 +8,8 @@
 #include <map>
 
 using boost::asio::ip::udp;
-#define SIZE_DATA 1024
+
+#define SIZE_DATA 1024 //don`t use buff lesser than 512
 #define TIME_SEC 5
 #define PREAM 55001
 
@@ -20,6 +21,7 @@ public:
     udp_com(boost::asio::io_service & service, std::set<ushort> & group, ushort port);
     ~udp_com();
 
+    void send_capture(const std::string & st, ushort group);
     void send_msg_to_group(const std::string &s, ushort group);
     void start_receive();
     void set_on_msg(std::function< void (const std::string &s, boost::asio::ip::address ip) > fun);
@@ -42,10 +44,11 @@ private:
     struct rec_frame
     {
         uint16_t packeg_id;
-        uint16_t full_pack;;
+        uint16_t full_pack;
         std::string msg;
     };
 
+    std::string m_img;
     boost::asio::io_service & m_io_service;
     ushort m_port;
 	boost::asio::ip::address m_multicast_address;

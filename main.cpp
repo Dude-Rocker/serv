@@ -66,6 +66,8 @@ int main(int ac, char **av)
             } else {
                 std::cerr << "cant read " << msg << std::endl;
             }
+        } else if (cmd == "d:") {
+            ;
         } else if (cmd == "address") {
             std::set<ushort> ads = commun.get_addrs();
             msg = "group contain:";

@@ -1,6 +1,7 @@
 #include "udp_com.hpp"
 #include <functional>
 #include <utility>
+#include <fstream>
 
 udp_com::udp_com(boost::asio::io_service & service, std::set<ushort> & group, ushort port) : m_io_service(service),
     m_port(port), m_socket(m_io_service), m_addr(group)
@@ -127,4 +128,20 @@ ushort udp_com::get_port()
 std::set<ushort> udp_com::get_addrs()
 {
     return m_addr;
+}
+
+void udp_com::send_capture(const std::string & st, ushort group)
+{
+    std::ifstream str(st, std::ios_base::in | std::ios_base::binary);
+
+    if (str.is_open()) {
+
+        str.seekg(0, std::ios::end);
+        size_t len = str.tellg();
+        str.seekg(0);
+        char *pict = new char[len];
+        str.read(pict, len);
+        m_img = pict;
+        send_msg_to_group(m_img, group);
+    }
 }
